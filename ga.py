@@ -123,62 +123,6 @@ class GA:
         
         return genome
 
-    # gets random targets with their dispos
-    def set_random_individuals(self, max=None):                
-        max = max if max is not None else self._mock_individuals_size        
-        for _ in range(max):        
-            keep_going = True
-            while keep_going is True:
-                id = str(randint(1000, 5000))
-                try:
-                    _ = self._individuals[id]                
-                except KeyError:                
-                    keep_going = False                
-                    self._individuals[id] = Individual(id, self._get_random_schedules())        
-
-    # gets random blocks
-    def set_random_blocks(self, default_date_start = '2020-11'):
-        self._blocks = Blocks(self._get_random_schedules(False, default_date_start))    
-
-    # gets random dispos
-    def _get_random_schedules(self, with_status = True, default_date_start = '2020-11'):        
-        s = randint(1, 28)
-        e = randint(s, 30)
-
-        dispos = []
-        for i in range(s, e):             
-            day = str(i)
-            if i - 10 < 0:
-                day = '0{}'.format(day)
-
-            tmp = randint(0, 20)
-            starth = tmp
-            if starth - 10 < 0:
-                starth = '0{}'.format(starth)
-            startm = randint(0, 59)
-            if startm - 10 < 0:
-                startm = '0{}'.format(startm)
-            
-            endh = randint(tmp + 1 , 23)
-            if endh - 10 < 0:
-                endh = '0{}'.format(endh)
-            endm = randint(0, 59)
-            if endm - 10 < 0:
-                endm = '0{}'.format(endm)
-
-            dispo = {
-                'date': '{}-{}'.format(default_date_start, day),
-                'start': str('{}:{}'.format(starth, startm)),
-                'end': str('{}:{}'.format(endh, endm))
-            }
-
-            if with_status is True:
-                dispo['status'] = randint(0, 1)
-
-            dispos.append(dispo)
-
-        return dispos
-
     # returns final score and its avg
     def get_final_score(self):
         s = (self._best_population.get_score() / self._best_population.count())
@@ -248,9 +192,8 @@ class GA:
         self._population.set_score(value)
 
     # set random datas
-    def set_random_datas(self):
-        self.set_random_individuals()
-        self.set_random_blocks()
+    def set_datas(self):
+        raise NotImplementedError
 
     # wrapper for datetime gen
     def get_dt(self, date, time):
@@ -356,3 +299,79 @@ class GA:
             else:
                 print('nothing for {} {} {}'.format(block['date'], block['start'], block['end']))
             print('----------------------------')            
+
+class RandomDatasGA(GA):
+    # set random datas
+    def set_datas(self):
+        self.set_random_individuals()
+        self.set_random_blocks()
+
+    # gets random targets with their dispos
+    def set_random_individuals(self, max=None):                
+        max = max if max is not None else self._mock_individuals_size        
+        for _ in range(max):        
+            keep_going = True
+            while keep_going is True:
+                id = str(randint(1000, 5000))
+                try:
+                    _ = self._individuals[id]                
+                except KeyError:                
+                    keep_going = False                
+                    self._individuals[id] = Individual(id, self._get_random_schedules())        
+
+    # gets random blocks
+    def set_random_blocks(self, default_date_start = '2020-11'):
+        self._blocks = Blocks(self._get_random_schedules(False, default_date_start))    
+
+    # gets random dispos
+    def _get_random_schedules(self, with_status = True, default_date_start = '2020-11'):        
+        s = randint(1, 28)
+        e = randint(s, 30)
+
+        dispos = []
+        for i in range(s, e):             
+            day = str(i)
+            if i - 10 < 0:
+                day = '0{}'.format(day)
+
+            tmp = randint(0, 20)
+            starth = tmp
+            if starth - 10 < 0:
+                starth = '0{}'.format(starth)
+            startm = randint(0, 59)
+            if startm - 10 < 0:
+                startm = '0{}'.format(startm)
+            
+            endh = randint(tmp + 1 , 23)
+            if endh - 10 < 0:
+                endh = '0{}'.format(endh)
+            endm = randint(0, 59)
+            if endm - 10 < 0:
+                endm = '0{}'.format(endm)
+
+            dispo = {
+                'date': '{}-{}'.format(default_date_start, day),
+                'start': str('{}:{}'.format(starth, startm)),
+                'end': str('{}:{}'.format(endh, endm))
+            }
+
+            if with_status is True:
+                dispo['status'] = randint(0, 1)
+
+            dispos.append(dispo)
+
+        return dispos
+
+class CustomDatasGA(GA):
+
+    def __init__(
+        self, 
+        coef_available=2,
+        coef_unavailable=-1,
+        max_generations=100,
+        population_size=250,
+        nb_mutations=1
+    ):
+
+        super(CustomDatasGA, self).__init__(coef_available,coef_unavailable,max_generations,population_size,nb_mutations)
+
