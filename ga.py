@@ -44,7 +44,7 @@ class GA:
     # Random population generation to init GA
     def generate_population(self, size=None):
         size = size if size is not None else self._population_size                
-        population = Population([])        
+        population = Population(0, [])        
         
         for _ in range(size):
             # foreach dispos assign a random individual
@@ -69,8 +69,8 @@ class GA:
         return self._population
 
     # setter
-    def set_population(self, generation):
-        self._population = Population(generation)
+    def set_population(self, id, generation):
+        self._population = Population(id, generation)
 
     # counter
     def count(self):
@@ -179,14 +179,10 @@ class GA:
 
         return dispos
 
-     # The fitness function
-    
-        # gets random dispos
-    
     # returns final score and its avg
     def get_final_score(self):
-        s = (self._population.get_score() / self._population.count())
-        return self._population.get_score(), s
+        s = (self._best_population.get_score() / self._best_population.count())
+        return self._best_population.get_score(), s
 
     # for each gene of each genome, runs constraint checks and score inc/decr
     def fit(self):
@@ -198,10 +194,10 @@ class GA:
                 try:            
                     block = self._blocks.get_dispo(int(parts[0]))                    
                     indiv = self._individuals[parts[1]]                    
-                except KeyError:           
+                except KeyError:                               
                     continue
                 
-                if block is None or indiv is None:
+                if block is None or indiv is None:                    
                     continue
                 
                 # check no vals in block or indiv
@@ -212,7 +208,7 @@ class GA:
                 # get same dispo block
                 found_dispos = []
                 for dispo in indiv.get_dispos():
-                    if dispo['date'] != block['date']:                
+                    if dispo['date'] != block['date']:            
                         continue
                     found_dispos.append(dispo)
                 
@@ -260,18 +256,25 @@ class GA:
     def get_dt(self, date, time):
         return datetime.fromisoformat('{} {}'.format(date, time))
 
+    # detects best population and genome and sets them as attribute
+    def upgrade(self):
+        best_genome = self._population.get_best_genome()
+        if self._best_genome is None or self._best_genome.get_score() < best_genome.get_score():
+            self._best_genome = best_genome
+        if self._best_population is None or self._best_population.get_score() < self._population.get_score():
+            self._best_population = self._population
+
     # main method
     def run(self):
 
         self.generate_population()
+
         # 1. score and sort by fitness
         self.fit()
-        self.sort()
+        self.sort()        
 
         print('----------------------------')       
         for i in range(self._max_generations):
-            print(' pop {} score:           {}'.format(i, self.get_final_score()))
-
             # 2. checks
             # TODO: break if threshold is reached
 
@@ -296,25 +299,27 @@ class GA:
                 # 8. make them part of the new generation
                 next_generation += [offspring_a, offspring_b]
 
-            self.set_population(next_generation)
+            self.set_population(i, next_generation)
 
             # 9. fit and sort the new gen
             self.fit()
             self.sort()
+            self.upgrade()
+            print(' pop {} score:           {}'.format(i, self.get_final_score()))
 
         self.end()
 
-    # outputs metrics
+    # outputs metrics (generated datas)
     def start(self):
         print('----------------------------')       
         print('generated individuals:   {}'.format(len(self._individuals)))
         print('generated dispos:        {}'.format(len(self._blocks.get_dispos())))
         print('generated genomes:       {}'.format(self.get_population().count()))
 
-    # outputs metrics
+    # outputs metrics (globals)
     def end(self):        
         print('\n----------------------------')
-        print('FINAL SCORE:             {}'.format(self.get_final_score()))
+        print('FINAL BEST SCORE:        {}'.format(self.get_final_score()))
         the_max = max(self._population.get_genomes(), key=lambda genome: genome.get_score())
         print('max:                     {}'.format(the_max.get_score()))
         the_min = min(self._population.get_genomes(), key=lambda genome: genome.get_score())
@@ -323,4 +328,31 @@ class GA:
         print('sum:                     {}'.format(the_sum))
         the_avg = the_sum / self._population.count()
         print('avg:                     {}'.format(the_avg))
+        print('best population:         {} {}'.format(self._best_population.get_score(), self._best_population.get_id()))
+        print('best genome:             {} {}'.format(self._best_genome.get_score(), self._best_genome.get_genes()))
         print('----------------------------')
+
+    # outputs metrics (details)
+    def details(self):        
+        for block in self._blocks.get_dispos():
+            print(block)
+        print('----------------------------')
+
+        for id in self._individuals:
+            indiv = self._individuals[id]
+            print('indiv {}'.format(indiv.get_id()))            
+            for dispo in indiv.get_dispos():
+                print(dispo)
+        print('----------------------------')
+                
+        for gene in self._best_genome.get_genes():
+            parts = gene.split('-')
+            block = self._blocks.get_dispo(int(parts[0]))                    
+            indiv = self._individuals[parts[1]]                 
+            dispo = indiv.get_dispo(block['date'])
+            if dispo is not None:
+                print('{} {} {}'.format(block['date'], block['start'], block['end']))
+                print('{} {} {}'.format(indiv.get_id(), dispo['start'], dispo['end']))  
+            else:
+                print('nothing for {} {} {}'.format(block['date'], block['start'], block['end']))
+            print('----------------------------')            

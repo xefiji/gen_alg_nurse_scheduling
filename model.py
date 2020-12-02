@@ -26,10 +26,12 @@ class Population:
     """
     this class holds all genomes of a population,
     with its score
-    """
-    def __init__(self, genomes = []):
+    """     
+    def __init__(self, id, genomes = []):
+        self._id = id
         self._genomes = genomes
         self._score = 0
+        self._sorted = False
 
     def add_genome(self, genome):  
         self._genomes.append(genome)
@@ -40,6 +42,9 @@ class Population:
     def get_score(self):
         return self._score
 
+    def get_id(self):
+        return self._id
+
     def set_score(self, score):
         self._score = score
 
@@ -48,6 +53,12 @@ class Population:
 
     def sort(self):
         self._genomes = sorted(self._genomes, key=lambda genome: genome.get_score(), reverse=True)
+        self._sorted = True
+
+    def get_best_genome(self):
+        if False == self._sorted:
+            self.sort()
+        return self._genomes[0]
 
 class Individual:
     """
@@ -67,6 +78,13 @@ class Individual:
     
     def get_dispos(self):
         return self._dispos
+
+    def get_dispo(self, date):
+        try:
+            return [dispo for dispo in self._dispos if dispo['date'] == date][0]
+        except IndexError:            
+            return None
+
 
 class Blocks:
     """

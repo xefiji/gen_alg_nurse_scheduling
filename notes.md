@@ -36,3 +36,14 @@ https://www.patatconference.org/patat2008/proceedings/Dean-WA3c.pdf
 Penser aux priorConsecutiveDays
 
 comparer genome 1D vs 2D
+
+# todo
+
+* [ ] csv parser
+* [ ] csv datas
+* [ ] real scoring final
+* [ ] more constraints and fitness: 
+* [ ] check jours consecutifs prior consecutive days
+* [ ] privilégier des jours consécutifs
+* [ ] check le total hebdo max
+* [ ] order 3 best possibilities by block

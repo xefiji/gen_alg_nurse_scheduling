@@ -3,7 +3,14 @@ from os import sys
     
 
 # 1. instantiate algorithm
-ga = GA(max_generations=35)
+ga = GA(
+    coef_available=2,
+    coef_unavailable=-2,
+    max_generations=40,
+    population_size=250,
+    mock_individuals_size=50,
+    nb_mutations=2
+)
 
 # 2. get almost feasible blocks and individuals from random generation
 ga.set_random_datas()
