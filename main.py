@@ -6,7 +6,7 @@ from os import sys
 ga = GA(
     coef_available=2,
     coef_unavailable=-2,
-    max_generations=40,
+    max_generations=30,
     population_size=250,
     mock_individuals_size=50,
     nb_mutations=2
